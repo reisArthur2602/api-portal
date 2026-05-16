@@ -1,0 +1,41 @@
+{
+    "name": "api-portal-master",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "main": "src/http/server.ts",
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "scripts": {
+        "dev": "tsx watch src/http/server.ts",
+        "build": "tsc",
+        "start": "node dist/http/server.js",
+        "deploy": "git pull && npm install && pm2 restart"
+    },
+    "devDependencies": {
+        "@types/node": "latest",
+        "@types/pg": "latest",
+        "prisma": "latest",
+        "tsx": "latest",
+        "typescript": "latest"
+    },
+    "dependencies": {
+        "@fastify/cors": "latest",
+        "@fastify/jwt": "latest",
+        "@fastify/multipart": "latest",
+        "@fastify/rate-limit": "latest",
+        "@fastify/swagger": "latest",
+        "@prisma/adapter-pg": "latest",
+        "@prisma/client": "latest",
+        "@scalar/fastify-api-reference": "latest",
+        "argon2": "latest",
+        "basic-ftp": "latest",
+        "dotenv": "latest",
+        "fastify": "latest",
+        "fastify-plugin": "latest",
+        "fastify-type-provider-zod": "latest",
+        "pg": "latest",
+        "zod": "latest"
+    }
+}

@@ -1,0 +1,73 @@
+generator client {
+    provider = "prisma-client"
+    output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+model User {
+    id        String   @id @default(cuid())
+    email     String?  @unique
+    role      UserRole @default(Staff)
+    userName  String   @unique
+    password  String
+    createdAt DateTime @default(now())
+}
+
+model Patient {
+    id        String   @id @default(cuid())
+    name      String
+    cpf       String   @unique
+    phone     String   @unique
+    email     String?  @unique
+    birthDate DateTime
+    createdAt DateTime @default(now())
+
+    exams Exam[]
+}
+
+enum ExamStatus {
+    PENDING
+    REPORTED
+    READY
+    DELIVERED
+}
+
+enum ExamType {
+    DICOM
+    EXTERNAL
+}
+
+model Exam {
+    id           String     @id @default(cuid())
+    status       ExamStatus @default(PENDING)
+    type         ExamType   @default(EXTERNAL)
+    registry     Int
+    description  String?
+    profissional String
+    createdAt    DateTime   @default(now())
+    patientId    String
+    patient      Patient    @relation(fields: [patientId], references: [id], onDelete: Restrict)
+    report       Report?
+
+    @@index([patientId, createdAt])
+    @@index([status])
+    @@index([type])
+}
+
+model Report {
+    id        String   @id @default(cuid())
+    examId    String   @unique
+    filename  String
+    url       String
+    createdAt DateTime @default(now())
+
+    exam Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+}
+
+enum UserRole {
+    Staff
+    Admin
+}
