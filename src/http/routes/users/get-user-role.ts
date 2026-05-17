@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import z from 'zod';
-import { UserRole } from '../../../../generated/prisma/enums';
+import { UserRole } from '../../../generated/prisma/enums';
 import { db } from '../../../db/prisma';
 import { NotFoundError } from '../../_errors/not-found';
 

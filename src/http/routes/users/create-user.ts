@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import z from 'zod';
-import { UserRole } from '../../../../generated/prisma/enums';
+import { UserRole } from '../../../generated/prisma/enums';
 import { db } from '../../../db/prisma';
 import { hashPassword } from '../../../lib/argon2';
 import { BadRequestError } from '../../_errors/bad-request';
