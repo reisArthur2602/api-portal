@@ -10,8 +10,8 @@
     "scripts": {
         "dev": "tsx watch src/http/server.ts",
         "build": "tsc",
-        "start": "node dist/http/server.js",
-        "deploy": "git pull && npm install && pm2 restart"
+        "start": "tsx build/src/http/server.js",
+        "deploy": "git pull && npm install && npm run start && pm2 restart"
     },
     "devDependencies": {
         "@types/node": "latest",
