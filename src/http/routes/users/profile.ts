@@ -2,8 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import z from 'zod';
-import { UserRole } from '../../../generated/prisma/enums';
 import { db } from '../../../db/prisma';
+import { UserRole } from '../../../generated/prisma/enums';
 import { NotFoundError } from '../../_errors/not-found';
 
 export const profile = async (app: FastifyInstance) => {
@@ -20,11 +20,11 @@ export const profile = async (app: FastifyInstance) => {
                             id: z.cuid(),
                             email: z.string().email().nullable(),
                             userName: z.string(),
-                            role: z.enum(UserRole).default('Staff'),
+                            role: z.enum(UserRole),
                         }),
                     }),
                 },
-                security: [{ bearerAuth: [] }],
+                security: [{ cookieAuth: [] }],
             },
 
             preHandler: [async (request) => await request.authenticate()],

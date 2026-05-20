@@ -3,7 +3,6 @@
 import fastifyCors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
 import { fastifyMultipart } from '@fastify/multipart';
-import fastifyRateLimit from '@fastify/rate-limit';
 import fastifySwagger from '@fastify/swagger';
 import fastifyApiReference from '@scalar/fastify-api-reference';
 import fastify from 'fastify';
@@ -16,28 +15,50 @@ import {
 
 import { authPlugin } from '../plugins/auth';
 
+import fastifyCookie from '@fastify/cookie';
+import fastifyRateLimit from '@fastify/rate-limit';
+import { COOKIE_NAME } from '../contants';
 import { errorHandler } from './_errors';
 import { routes } from './routes';
 
+// ENV
 const PORT = Number(process.env.PORT ?? 6000);
-const HOST = process.env.HOST ?? '0.0.0.0';
+const JWT_SECRET = process.env.JWT_SECRET as string;
+const NODE_ENV = process.env.NODE_ENV ?? 'development';
+const ALLOWED_ORIGIN = NODE_ENV === 'production' ? /\.centromedicoroma\.com\.br$/ : '*';
 
 const server = fastify();
 
-// rate limit
-server.register(fastifyRateLimit, { max: 20, timeWindow: '1 minute' });
+server.register(fastifyRateLimit, { max: 20, timeWindow: '5 minute' });
 
 server.setSerializerCompiler(serializerCompiler);
 server.setValidatorCompiler(validatorCompiler);
 
-// tratamento de erros
 server.setErrorHandler(errorHandler);
 
-server.register(fastifyCors, { origin: true });
+server.register(fastifyCors, {
+    origin: ALLOWED_ORIGIN,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+});
+
+server.register(fastifyCookie, {
+    parseOptions: {
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24,
+        httpOnly: true,
+        secure: NODE_ENV === 'production',
+        sameSite: NODE_ENV === 'production' ? 'lax' : 'lax',
+        domain: NODE_ENV === 'production' ? '.centromedicoroma.com.br' : undefined,
+    },
+});
 
 server.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET as string,
-    sign: { expiresIn: process.env.JWT_EXPIRES_IN || '7d' },
+    secret: JWT_SECRET,
+    cookie: {
+        cookieName: COOKIE_NAME,
+        signed: NODE_ENV === 'production' ? true : false,
+    },
 });
 
 server.register(fastifyMultipart, {
@@ -48,28 +69,25 @@ server.register(fastifyMultipart, {
     },
 });
 
-//documentação
-
 server.register(fastifySwagger, {
     openapi: {
-        openapi: '3.0.3',
+        openapi: '3.0.4',
         info: {
-            title: 'API - Portal Master',
+            title: 'Portal Master API',
+            description: 'Documentação da API',
             version: '1.0.0',
-            description: 'API do sistema de gestão Portal Master',
         },
 
         components: {
             securitySchemes: {
-                bearerAuth: {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT',
+                cookieAuth: {
+                    type: 'apiKey',
+                    in: 'cookie',
+                    name: COOKIE_NAME,
                 },
             },
         },
     },
-
     transform: jsonSchemaTransform,
 });
 
@@ -79,17 +97,8 @@ server.register(fastifyApiReference, {
     routePrefix: '/docs',
     configuration: {
         url: '/openapi.json',
-        theme: 'purple',
-        layout: 'classic',
-        showSidebar: true,
-        hideSearch: false,
-        hideClientButton: true,
-        hideDarkModeToggle: false,
-        darkMode: true,
-        hideModels: true,
         persistAuth: true,
         pageTitle: 'Portal Master - Documentação',
-        favicon: 'https://img.icons8.com/?size=100&id=35588&format=png&color=0082FF',
     },
 });
 
@@ -99,7 +108,7 @@ server.register(routes);
 // plugins
 server.register(authPlugin);
 
-server.listen({ port: PORT, host: HOST }).then(() => {
+server.listen({ port: PORT, host: '0.0.0.0' }).then(() => {
     console.clear();
     console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🚀 Servidor iniciado com sucesso');

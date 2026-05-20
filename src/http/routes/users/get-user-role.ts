@@ -16,10 +16,10 @@ export const getUserRole = async (app: FastifyInstance) => {
                 operationId: 'getUserRole',
                 response: {
                     200: z.object({
-                        role: z.enum(UserRole).default('Staff'),
+                        role: z.enum(UserRole),
                     }),
                 },
-                security: [{ bearerAuth: [] }],
+                security: [{ cookieAuth: [] }],
             },
             preHandler: [async (request) => await request.authenticate()],
         },

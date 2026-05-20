@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import z from 'zod';
-import { UserRole } from '../../../generated/prisma/enums';
 import { db } from '../../../db/prisma';
+import { UserRole } from '../../../generated/prisma/enums';
 import { hashPassword } from '../../../lib/argon2';
 import { BadRequestError } from '../../_errors/bad-request';
 
@@ -15,14 +15,14 @@ export const createUser = (app: FastifyInstance) =>
                 summary: 'Create User',
                 operationId: 'createUser',
                 body: z.object({
-                    email: z.string().email().nullable(),
+                    email: z.string().email().optional(),
                     userName: z.string().min(2),
-                    role: z.enum(UserRole).default('Staff'),
+                    role: z.enum(UserRole),
                 }),
                 response: {
                     201: z.null(),
                 },
-                security: [{ bearerAuth: [] }],
+                security: [{ cookieAuth: [] }],
             },
 
             preHandler: [

@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import z from 'zod';
+import { COOKIE_NAME } from '../../../contants';
 import { db } from '../../../db/prisma';
 import { verifyPassword } from '../../../lib/argon2';
 import { BadRequestError } from '../../_errors/bad-request';
@@ -15,13 +16,11 @@ export const login = (app: FastifyInstance) => {
                 summary: 'Login',
                 operationId: 'login',
                 body: z.object({
-                    userName: z.string().email(),
+                    userName: z.string().min(2),
                     password: z.string().min(6),
                 }),
                 response: {
-                    200: z.object({
-                        accessToken: z.string().jwt(),
-                    }),
+                    200: z.null(),
                 },
             },
         },
@@ -39,14 +38,14 @@ export const login = (app: FastifyInstance) => {
             if (!user) throw new BadRequestError('Credenciais inválidas');
 
             const isPasswordValid = await verifyPassword(user.password, password);
-            
+
             if (!isPasswordValid) throw new BadRequestError('Credenciais inválidas');
 
-            const accessToken = await reply.jwtSign({ sub: user.id }, { expiresIn: '7d' });
+            const accessToken = await reply.jwtSign({ sub: user.id }, { expiresIn: '24h' });
 
-            return reply.status(200).send({
-                accessToken,
-            });
+            reply.cookie(COOKIE_NAME, accessToken);
+
+            return reply.status(200).send(null);
         }
     );
 };

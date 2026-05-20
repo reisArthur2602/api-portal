@@ -10,7 +10,7 @@ datasource db {
 model User {
     id        String   @id @default(cuid())
     email     String?  @unique
-    role      UserRole @default(Staff)
+    role      UserRole @default(STAFF)
     userName  String   @unique
     password  String
     createdAt DateTime @default(now())
@@ -26,18 +26,6 @@ model Patient {
     createdAt DateTime @default(now())
 
     exams Exam[]
-}
-
-enum ExamStatus {
-    PENDING
-    REPORTED
-    READY
-    DELIVERED
-}
-
-enum ExamType {
-    DICOM
-    EXTERNAL
 }
 
 model Exam {
@@ -68,6 +56,18 @@ model Report {
 }
 
 enum UserRole {
-    Staff
-    Admin
+    STAFF
+    ADMIN
+}
+
+enum ExamStatus {
+    PENDING
+    REPORTED
+    READY
+    DELIVERED
+}
+
+enum ExamType {
+    DICOM
+    EXTERNAL
 }

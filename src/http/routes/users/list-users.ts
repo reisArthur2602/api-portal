@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import z from 'zod';
-import { UserRole } from '../../../generated/prisma/enums';
 import { db } from '../../../db/prisma';
+import { UserRole } from '../../../generated/prisma/enums';
 
 export const listUsers = (app: FastifyInstance) =>
     app.withTypeProvider<ZodTypeProvider>().get(
@@ -19,12 +19,13 @@ export const listUsers = (app: FastifyInstance) =>
                                 id: z.string().cuid(),
                                 userName: z.string(),
                                 email: z.string().email().nullable(),
-                                role: z.enum(UserRole).default('Staff'),
+                                role: z.enum(UserRole),
+                                createdAt: z.date(),
                             })
                         ),
                     }),
                 },
-                security: [{ bearerAuth: [] }],
+                security: [{ cookieAuth: [] }],
             },
 
             preHandler: [
@@ -40,6 +41,7 @@ export const listUsers = (app: FastifyInstance) =>
                     userName: true,
                     email: true,
                     role: true,
+                    createdAt: true,
                 },
                 orderBy: {
                     userName: 'asc',

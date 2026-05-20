@@ -19,30 +19,18 @@ export const authPlugin = fastifyPlugin(async (app: FastifyInstance) => {
     app.addHook('preHandler', async (request) => {
         request.authenticate = async () => {
             try {
-                const authorizationHeader = request.headers.authorization;
-
-                if (!authorizationHeader)
-                    throw new UnauthorizedError(
-                        'Sessão não autenticada. Informe o token de acesso.'
-                    );
-
-                const { sub: userId } = await request.jwtVerify<{ sub: string }>();
+                const token = await request.jwtVerify<{ sub: string }>();
 
                 const user = await db.user.findUnique({
-                    where: { id: userId },
+                    where: { id: token.sub },
                     select: { id: true, role: true },
                 });
 
-                if (!user)
-                    throw new UnauthorizedError(
-                        'Sessão inválida. Usuário não encontrado ou sem acesso.'
-                    );
+                if (!user) throw new UnauthorizedError('Usuário não encontrado');
 
-                return { userId: user.id };
-            } catch {
-                throw new UnauthorizedError(
-                    'Sessão expirada ou token inválido. Faça login novamente.'
-                );
+                return { userId: user.id, role: user.role };
+            } catch (error) {
+                throw new UnauthorizedError('Token inválido ou expirado');
             }
         };
 
@@ -59,7 +47,7 @@ export const authPlugin = fastifyPlugin(async (app: FastifyInstance) => {
                 select: { role: true },
             });
 
-            const isAdmin = user?.role === 'Admin';
+            const isAdmin = user?.role === 'ADMIN';
 
             if (!isAdmin)
                 throw new UnauthorizedError(
